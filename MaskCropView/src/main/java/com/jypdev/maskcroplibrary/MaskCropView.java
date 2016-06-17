@@ -61,7 +61,6 @@ public class MaskCropView extends View {
 
 
     public void setOriginalBitmap(Bitmap originalBitmap) {
-        Log.v("jyp", "setOriginalBitmap start");
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
         int width = metrics.widthPixels;
@@ -74,11 +73,9 @@ public class MaskCropView extends View {
         viewClear(FLAG_ALL_CLEAR);
         resizeBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
         invalidate();
-        Log.v("jyp", "setOriginalBitmap end");
     }
 
     private void init() {
-        Log.v("jyp","init start");
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
@@ -108,12 +105,10 @@ public class MaskCropView extends View {
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         drawPaint.setStrokeWidth(2);
         viewPath = new Path();
-        Log.v("jyp","init end");
     }
 
 
     protected void onDraw(Canvas canvas) {
-        Log.v("jyp", "onDraw");
         if(resizeBitmap!=null)
             canvas.drawBitmap(resizeBitmap,0,0,paint);  //Original Image (Background)
 

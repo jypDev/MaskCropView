@@ -25,7 +25,7 @@ import java.io.IOException;
 public class ImageUtil {
 
     private static void init(Context context){
-//        Constants.setTempPath("/data/data/"+context.getPackageName()+"/cashe");
+//        Constants.setTempPath("/data/data/"+context.getPackageName()+"/temp");
     }
 
     public static void getCameraImage(Context context){
