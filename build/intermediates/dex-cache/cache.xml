@@ -1,2 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
+
+    <item
+        jar="/Users/JY-park/Desktop/MaskCropView/app/build/intermediates/exploded-aar/MaskCropView/MaskCropView/unspecified/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="b2cce95afa10e70176538aec6970f789cd64db91">
+        <dex dex="/Users/JY-park/Desktop/MaskCropView/app/build/intermediates/pre-dexed/debug/MaskCropView-MaskCropView-unspecified_30cf7731b512e459007286e82db8b6e1dd977dcb.jar" />
+    </item>
+
+</items>

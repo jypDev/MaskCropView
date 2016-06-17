@@ -49,6 +49,7 @@ public class ImageUtil {
                 case Constants.ACTIVITY_RESULT_CODE_CAMERA: {
                     Bitmap bitmap = decodeSampledBitmapFromPath(context, Constants.TEMP_PATH+"/"+Constants.TEMP_FILENAME);
                     view.setOriginalBitmap(bitmap);
+                    bitmap.recycle();
 
                 }
                 break;
@@ -80,7 +81,7 @@ public class ImageUtil {
                 break;
             }
         }else{
-            throw new NullPointerException();
+           //TODO
         }
     }
 

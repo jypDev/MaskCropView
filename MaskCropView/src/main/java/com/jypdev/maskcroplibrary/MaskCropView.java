@@ -20,12 +20,17 @@ import android.view.View;
  */
 public class MaskCropView extends View {
 
+    private static final int FLAG_ALL_CLEAR = 100;
+    private static final int FLAG_RESET_DRAW = 200;
+
     private float mX, mY;
 
     private Paint paint = new Paint();
     private Bitmap resizeBitmap;
     private boolean drawFlag = false;
 
+    private int displayWidth;
+    private int displayHeight;
 
     private Bitmap maskBitmap;
     private Bitmap outBitmap;
@@ -66,8 +71,8 @@ public class MaskCropView extends View {
             height = metrics.widthPixels;
         }
 
+        viewClear(FLAG_ALL_CLEAR);
         resizeBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
-        originalBitmap.recycle();
         invalidate();
         Log.v("jyp", "setOriginalBitmap end");
     }
@@ -77,8 +82,8 @@ public class MaskCropView extends View {
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        int displayWidth = metrics.widthPixels;
-        int displayHeight = metrics.heightPixels;
+        displayWidth = metrics.widthPixels;
+        displayHeight = metrics.heightPixels;
 
         //mask 세팅 ================================
         fillPaint = new Paint();
@@ -120,6 +125,7 @@ public class MaskCropView extends View {
     }
 
     private void touch_start(float x, float y) {
+        viewClear(FLAG_RESET_DRAW);
         drawFlag = false;
         maskPath.reset();
         viewPath.reset();
@@ -143,6 +149,33 @@ public class MaskCropView extends View {
         outCanvas.drawBitmap(maskBitmap, 0, 0, paint);
 
         paint.setXfermode(null);
+
+    }
+
+    private void viewClear(int mode){
+        if(drawFlag==true) {
+            maskBitmap.recycle();
+            maskBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
+            maskCanvas = new Canvas(maskBitmap);
+
+            outBitmap.recycle();
+            outBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
+            outCanvas = new Canvas(outBitmap);
+
+        }
+
+        if(mode == FLAG_ALL_CLEAR) {
+            if (resizeBitmap != null) {
+                resizeBitmap.recycle();
+            }
+
+            maskPath.reset();
+            viewPath.reset();
+            drawFlag=false;
+        }else if(mode == FLAG_RESET_DRAW){
+
+        }
+
 
     }
 
