@@ -11,7 +11,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -23,7 +22,8 @@ public class MaskCropView extends View {
     private static final int FLAG_ALL_CLEAR = 100;
     private static final int FLAG_RESET_DRAW = 200;
 
-    private float mX, mY;
+    private float mX;
+    private float mY;
 
     private Paint paint = new Paint();
     private Bitmap resizeBitmap;
@@ -197,5 +197,19 @@ public class MaskCropView extends View {
             invalidate();
         }
         return true;
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (resizeBitmap != null) {
+            resizeBitmap.recycle();
+        }
+        if(maskBitmap != null){
+            maskBitmap.recycle();
+        }
+        if(outBitmap != null){
+            outBitmap.recycle();
+        }
     }
 }
