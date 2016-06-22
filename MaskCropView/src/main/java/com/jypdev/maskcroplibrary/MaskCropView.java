@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
@@ -24,6 +25,11 @@ public class MaskCropView extends View {
 
     private float mX;
     private float mY;
+
+    private int startX;
+    private int startY;
+    private int endX;
+    private int endY;
 
     private Paint paint = new Paint();
     private Bitmap resizeBitmap;
@@ -44,6 +50,7 @@ public class MaskCropView extends View {
     private Paint fillPaint;
     private Paint drawPaint;
 
+
     public MaskCropView(Context context) {
         super(context);
         init();
@@ -57,6 +64,14 @@ public class MaskCropView extends View {
     public MaskCropView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
+    }
+
+    //public
+
+    public Bitmap getPicture(){
+
+        Bitmap cropBitmap = Bitmap.createBitmap(outBitmap,startX,startY,endX-startX,endY-startY);
+        return cropBitmap;
     }
 
 
@@ -128,6 +143,10 @@ public class MaskCropView extends View {
         viewPath.moveTo(x, y);
         mX = x;
         mY = y;
+        startX = (int) mX;
+        startY = (int) mY;
+        endX = (int) mX;
+        endY = (int) mY;
     }
 
     private void touch_up() {
@@ -166,6 +185,7 @@ public class MaskCropView extends View {
 
             maskPath.reset();
             viewPath.reset();
+
             drawFlag=false;
         }else if(mode == FLAG_RESET_DRAW){
 
@@ -189,6 +209,10 @@ public class MaskCropView extends View {
                 case MotionEvent.ACTION_MOVE:
                     maskPath.lineTo(x, y);
                     viewPath.lineTo(x, y);
+                    startX = startX > x ? (int) x : startX;
+                    startY = startY > y ? (int) y : startY;
+                    endX = endX < x ? (int) x : endX;
+                    endY = endY < y ? (int) y : endY;
                     break;
                 case MotionEvent.ACTION_UP:
                     touch_up();

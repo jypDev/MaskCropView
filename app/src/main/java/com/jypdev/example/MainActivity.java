@@ -1,12 +1,16 @@
 package com.jypdev.example;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.jypdev.maskcroplibrary.ImageUtil;
 import com.jypdev.maskcroplibrary.MaskCropView;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -33,7 +37,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             break;
             case R.id.confirm_button:{
-
+                Bitmap bitmap = view.getPicture();
+                FileOutputStream fos;
+                try {
+                    fos = new FileOutputStream("/sdcard/capture.png");
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }break;
         }
     }
