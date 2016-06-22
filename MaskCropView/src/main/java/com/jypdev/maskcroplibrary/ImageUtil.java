@@ -59,12 +59,10 @@ public class ImageUtil {
 
 
                     if (TextUtils.isEmpty(imagePath)) {
-                        // 내부에 존재하지 않는 이미지인 경우 (예, Picasa)
                         File file = new File(Constants.TEMP_PATH + "/" + Constants.TEMP_FILENAME);
                         imagePath = file.getAbsolutePath();
 
                         try {
-                            // 외부 이미지, 단말기에 저장하기
                             Bitmap bmp = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
                             FileOutputStream fileStream = new FileOutputStream(file);
                             bmp.compress(Bitmap.CompressFormat.PNG, 100, fileStream);
@@ -127,11 +125,9 @@ public class ImageUtil {
 
         int height = options.outHeight;
         int width = options.outWidth;
-        Log.v("jyp", "");
 
         options.inSampleSize = calculateInSampleSize(options, getScreenWidth(context), getScreenHeight(context));
 
-        // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         bmp = BitmapFactory.decodeFile(path, options);
 
