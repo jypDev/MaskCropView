@@ -69,8 +69,10 @@ public class MaskCropView extends View {
     //public
 
     public Bitmap getPicture(){
-
-        Bitmap cropBitmap = Bitmap.createBitmap(outBitmap,startX,startY,endX-startX,endY-startY);
+        Bitmap cropBitmap = null;
+        if(drawFlag) {
+            cropBitmap = Bitmap.createBitmap(outBitmap, startX, startY, endX - startX, endY - startY);
+        }
         return cropBitmap;
     }
 
