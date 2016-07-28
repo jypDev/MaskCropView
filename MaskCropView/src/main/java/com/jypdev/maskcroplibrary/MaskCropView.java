@@ -70,9 +70,9 @@ public class MaskCropView extends View {
 
     //public
 
-    public Bitmap getPicture(){
+    public Bitmap getPicture() {
         Bitmap cropBitmap = null;
-        if(drawFlag) {
+        if (drawFlag) {
             cropBitmap = Bitmap.createBitmap(outBitmap, startX, startY, endX - startX, endY - startY);
         }
         return cropBitmap;
@@ -84,17 +84,21 @@ public class MaskCropView extends View {
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
         int width = metrics.widthPixels;
         int height = metrics.heightPixels;
-        if(width>height) {
+        if (width > height) {
             width = metrics.heightPixels;
             height = metrics.widthPixels;
         }
 
         viewClear(FLAG_ALL_CLEAR);
         resizeBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
-        originalBitmap.recycle();
+        if (originalBitmap.getWidth() != width && originalBitmap.getHeight() != height) {
+            originalBitmap.recycle();
+        }
+
         invalidate();
     }
-    public void setOrientation(boolean isVertical){
+
+    public void setOrientation(boolean isVertical) {
         this.isVertical = isVertical;
     }
 
@@ -110,11 +114,11 @@ public class MaskCropView extends View {
         fillPaint.setColor(0xFFFFFFFF); //흰색
         fillPaint.setStyle(Paint.Style.FILL); //채우기 옵션
         maskPath = new Path();
-        maskBitmap = Bitmap.createBitmap(displayWidth,displayHeight, Bitmap.Config.ARGB_8888);
+        maskBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
         maskCanvas = new Canvas(maskBitmap);
 
         //output 세팅 ================================
-        outBitmap = Bitmap.createBitmap(displayWidth,displayHeight, Bitmap.Config.ARGB_8888);
+        outBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
         outCanvas = new Canvas(outBitmap);
 
         //draw 세팅 ================================
@@ -132,14 +136,14 @@ public class MaskCropView extends View {
 
 
     protected void onDraw(Canvas canvas) {
-        if(resizeBitmap!=null)
-            canvas.drawBitmap(resizeBitmap,0,0,paint);  //Original Image (Background)
+        if (resizeBitmap != null)
+            canvas.drawBitmap(resizeBitmap, 0, 0, paint);  //Original Image (Background)
 
-        if(drawFlag){
+        if (drawFlag) {
             canvas.drawColor(0x77000000);               //Dim
             canvas.drawBitmap(outBitmap, 0, 0, null);   //Masking Image
         }
-        canvas.drawPath(viewPath,drawPaint);            //Masking line
+        canvas.drawPath(viewPath, drawPaint);            //Masking line
     }
 
     private void touch_start(float x, float y) {
@@ -174,8 +178,8 @@ public class MaskCropView extends View {
 
     }
 
-    private void viewClear(int mode){
-        if(drawFlag==true) {
+    private void viewClear(int mode) {
+        if (drawFlag == true) {
             maskBitmap.recycle();
             maskBitmap = null;
             maskBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
@@ -188,7 +192,7 @@ public class MaskCropView extends View {
 
         }
 
-        if(mode == FLAG_ALL_CLEAR) {
+        if (mode == FLAG_ALL_CLEAR) {
             if (resizeBitmap != null) {
                 resizeBitmap.recycle();
                 resizeBitmap = null;
@@ -197,8 +201,8 @@ public class MaskCropView extends View {
             maskPath.reset();
             viewPath.reset();
 
-            drawFlag=false;
-        }else if(mode == FLAG_RESET_DRAW){
+            drawFlag = false;
+        } else if (mode == FLAG_RESET_DRAW) {
 
         }
 
@@ -212,7 +216,7 @@ public class MaskCropView extends View {
         float x = event.getX();
         float y = event.getY();
 
-        if(resizeBitmap!=null) {
+        if (resizeBitmap != null) {
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     touch_start(x, y);
@@ -241,11 +245,11 @@ public class MaskCropView extends View {
             resizeBitmap.recycle();
             resizeBitmap = null;
         }
-        if(maskBitmap != null){
+        if (maskBitmap != null) {
             maskBitmap.recycle();
             maskBitmap = null;
         }
-        if(outBitmap != null){
+        if (outBitmap != null) {
             outBitmap.recycle();
             outBitmap = null;
         }
