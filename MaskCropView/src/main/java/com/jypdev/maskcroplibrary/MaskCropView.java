@@ -23,6 +23,8 @@ public class MaskCropView extends View {
     private static final int FLAG_ALL_CLEAR = 100;
     private static final int FLAG_RESET_DRAW = 200;
 
+    private boolean isVertical = true;
+
     private float mX;
     private float mY;
 
@@ -91,6 +93,9 @@ public class MaskCropView extends View {
         resizeBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
         originalBitmap.recycle();
         invalidate();
+    }
+    public void setOrientation(boolean isVertical){
+        this.isVertical = isVertical;
     }
 
     private void init() {
@@ -231,12 +236,15 @@ public class MaskCropView extends View {
         super.onDetachedFromWindow();
         if (resizeBitmap != null) {
             resizeBitmap.recycle();
+            resizeBitmap = null;
         }
         if(maskBitmap != null){
             maskBitmap.recycle();
+            maskBitmap = null;
         }
         if(outBitmap != null){
             outBitmap.recycle();
+            outBitmap = null;
         }
     }
 }
