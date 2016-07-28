@@ -91,7 +91,7 @@ public class MaskCropView extends View {
 
         viewClear(FLAG_ALL_CLEAR);
         resizeBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, false);
-        if (originalBitmap.getWidth() != width && originalBitmap.getHeight() != height) {
+        if (originalBitmap != resizeBitmap) {
             originalBitmap.recycle();
         }
 
