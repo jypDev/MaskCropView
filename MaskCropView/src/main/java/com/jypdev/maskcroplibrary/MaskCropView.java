@@ -177,10 +177,12 @@ public class MaskCropView extends View {
     private void viewClear(int mode){
         if(drawFlag==true) {
             maskBitmap.recycle();
+            maskBitmap = null;
             maskBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
             maskCanvas = new Canvas(maskBitmap);
 
             outBitmap.recycle();
+            outBitmap = null;
             outBitmap = Bitmap.createBitmap(displayWidth, displayHeight, Bitmap.Config.ARGB_8888);
             outCanvas = new Canvas(outBitmap);
 
@@ -189,6 +191,7 @@ public class MaskCropView extends View {
         if(mode == FLAG_ALL_CLEAR) {
             if (resizeBitmap != null) {
                 resizeBitmap.recycle();
+                resizeBitmap = null;
             }
 
             maskPath.reset();
