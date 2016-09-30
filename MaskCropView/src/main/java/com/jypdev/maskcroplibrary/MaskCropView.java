@@ -69,11 +69,19 @@ public class MaskCropView extends View {
     }
 
     //public
-
+    /**
+     * CropImage
+     * @return Must need null Check!
+     */
     public Bitmap getPicture() {
         Bitmap cropBitmap = null;
         if (drawFlag) {
-            cropBitmap = Bitmap.createBitmap(outBitmap, startX, startY, endX - startX, endY - startY);
+            if(Math.abs(endX-startX) > 10 && Math.abs(endY-startY) > 10) {
+                cropBitmap = Bitmap.createBitmap(outBitmap, startX, startY, endX - startX, endY - startY);
+            }
+        }else{
+            outCanvas.drawBitmap(resizeBitmap, 0, 0, null);
+            cropBitmap = Bitmap.createBitmap(outBitmap,0,0,displayWidth,displayHeight);
         }
         return cropBitmap;
     }

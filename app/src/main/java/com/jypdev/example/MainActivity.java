@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import com.jypdev.maskcroplibrary.ImageUtil;
 import com.jypdev.maskcroplibrary.MaskCropView;
@@ -38,21 +39,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             break;
             case R.id.confirm_button:{
                 Bitmap bitmap = view.getPicture();
-                FileOutputStream fos;
-                try {
-                    fos = new FileOutputStream("/sdcard/capture.png");
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                if(bitmap!=null) {
+                    FileOutputStream fos;
+                    try {
+                        fos = new FileOutputStream("/sdcard/capture.png");
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                        Toast.makeText(MainActivity.this, "success", Toast.LENGTH_SHORT).show();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    Toast.makeText(MainActivity.this, "null", Toast.LENGTH_SHORT).show();
                 }
             }break;
         }
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 
-
-        @Override
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
        super.onActivityResult(requestCode,resultCode,data);
             ImageUtil.onActivityResult(this,view,requestCode,resultCode,data);
