@@ -4,14 +4,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -25,9 +28,17 @@ public class MaskCropView extends View {
 
     private boolean isVertical = true;
 
+    //현재 터치한위치
+    private int currentX;
+    private int currentY;
+
+    //preview size
+    private int preViewSize;
+
+
+    //터치 시작한위치
     private float mX;
     private float mY;
-
     private int startX;
     private int startY;
     private int endX;
@@ -36,10 +47,13 @@ public class MaskCropView extends View {
     private Paint paint = new Paint();
     private Bitmap resizeBitmap;
     private boolean drawFlag = false;
+    private boolean preViewFlag = false;
+    private boolean firstDraw = true;
 
     private int displayWidth;
     private int displayHeight;
 
+    private Bitmap preViewBitmap;
     private Bitmap maskBitmap;
     private Bitmap outBitmap;
 
@@ -51,6 +65,7 @@ public class MaskCropView extends View {
 
     private Paint fillPaint;
     private Paint drawPaint;
+    private Paint preViewPoint;
 
 
     public MaskCropView(Context context) {
@@ -69,19 +84,21 @@ public class MaskCropView extends View {
     }
 
     //public
+
     /**
      * CropImage
+     *
      * @return Must need null Check!
      */
     public Bitmap getPicture() {
         Bitmap cropBitmap = null;
         if (drawFlag) {
-            if(Math.abs(endX-startX) > 10 && Math.abs(endY-startY) > 10) {
+            if (Math.abs(endX - startX) > 10 && Math.abs(endY - startY) > 10) {
                 cropBitmap = Bitmap.createBitmap(outBitmap, startX, startY, endX - startX, endY - startY);
             }
-        }else{
+        } else {
             outCanvas.drawBitmap(resizeBitmap, 0, 0, null);
-            cropBitmap = Bitmap.createBitmap(outBitmap,0,0,displayWidth,displayHeight);
+            cropBitmap = Bitmap.createBitmap(outBitmap, 0, 0, displayWidth, displayHeight);
         }
         return cropBitmap;
     }
@@ -103,6 +120,7 @@ public class MaskCropView extends View {
             originalBitmap.recycle();
         }
 
+        setDrawingCacheEnabled(true);
         invalidate();
     }
 
@@ -140,6 +158,13 @@ public class MaskCropView extends View {
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         drawPaint.setStrokeWidth(2);
         viewPath = new Path();
+
+        preViewPoint = new Paint();
+        preViewPoint.setColor(0xFFFF0000);
+        preViewSize = displayWidth / 7;
+        Log.v("@@@", "프리뷰사이즈: " + preViewSize);
+        //preView Setting
+//        setDrawingCacheEnabled(true);
     }
 
 
@@ -151,7 +176,31 @@ public class MaskCropView extends View {
             canvas.drawColor(0x77000000);               //Dim
             canvas.drawBitmap(outBitmap, 0, 0, null);   //Masking Image
         }
-        canvas.drawPath(viewPath, drawPaint);            //Masking line
+        canvas.drawPath(viewPath, drawPaint);           //Masking line
+
+        if(firstDraw){
+            firstDraw =false;
+        }
+
+        if (preViewFlag) {
+            int srcLeft = (currentX - preViewSize);// < 0 ? 0 : currentX - preViewSize;
+            int srcTop = (currentY - preViewSize);// < 0 ? 0 : currentY - preViewSize;
+            int srcRight = (currentX + preViewSize);// < 0 ? 0 : currentX + preViewSize;
+            int srcBottom = (currentY + preViewSize);// < 0 ? 0 : currentY + preViewSize;
+
+            int dstLeft = (int) (currentX-preViewSize*2);
+            int dstTop = (int) (currentY-preViewSize*2);
+            int dstRight = (int) (currentX-preViewSize*0.7);
+            int dstBottom = (int) (currentY-preViewSize*0.7);
+
+            int pointLeft = dstLeft+(dstRight - dstLeft)/2;
+            int pointTop = dstTop+(dstBottom - dstTop)/2;
+            int pointRight = pointLeft + preViewSize/9;
+            int pointBottom = pointTop + preViewSize/9;
+
+            canvas.drawBitmap(getDrawingCache(), new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(dstLeft, dstTop,dstRight, dstBottom), null);
+            canvas.drawRect(pointLeft, pointTop, pointRight, pointBottom,preViewPoint);
+        }
     }
 
     private void touch_start(float x, float y) {
@@ -228,6 +277,10 @@ public class MaskCropView extends View {
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     touch_start(x, y);
+
+                    currentX = (int) x;
+                    currentY = (int) y;
+                    preViewFlag = true;
                     break;
                 case MotionEvent.ACTION_MOVE:
                     maskPath.lineTo(x, y);
@@ -236,9 +289,14 @@ public class MaskCropView extends View {
                     startY = startY > y ? (int) y : startY;
                     endX = endX < x ? (int) x : endX;
                     endY = endY < y ? (int) y : endY;
+
+                    currentX = (int) x;
+                    currentY = (int) y;
+                    preViewFlag = true;
                     break;
                 case MotionEvent.ACTION_UP:
                     touch_up();
+                    preViewFlag = false;
                     break;
             }
             invalidate();
