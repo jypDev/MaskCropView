@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -34,6 +32,18 @@ public class MaskCropView extends View {
 
     //preview size
     private int preViewSize;
+    private int preViewPosition;
+    private int preViewPointSize;
+
+    private int lbDstLeft;
+    private int lbDstTop;
+    private int lbDstRight;
+    private int lbDstBottom;
+
+    private int rtDstLeft;
+    private int rtDstTop;
+    private int rtDstRight;
+    private int rtDstBottom;
 
 
     //터치 시작한위치
@@ -50,6 +60,9 @@ public class MaskCropView extends View {
     private boolean preViewFlag = false;
     private boolean firstDraw = true;
 
+    private boolean leftFlag = false;
+    private boolean topFlag = false;
+
     private int displayWidth;
     private int displayHeight;
 
@@ -65,7 +78,8 @@ public class MaskCropView extends View {
 
     private Paint fillPaint;
     private Paint drawPaint;
-    private Paint preViewPoint;
+    private Paint preViewPaint;
+    private Paint preViewRectLine;
 
 
     public MaskCropView(Context context) {
@@ -159,9 +173,13 @@ public class MaskCropView extends View {
         drawPaint.setStrokeWidth(2);
         viewPath = new Path();
 
-        preViewPoint = new Paint();
-        preViewPoint.setColor(0xFFFF0000);
-        preViewSize = displayWidth / 7;
+        preViewRectLine = new Paint();
+        preViewRectLine.setColor(0xFFFFFF00);
+        preViewPaint = new Paint();
+        preViewPaint.setColor(0xFFFF0000);
+        preViewSize = displayWidth / 5;
+        preViewPosition = displayWidth / 5;
+        preViewPointSize = 3;
         Log.v("@@@", "프리뷰사이즈: " + preViewSize);
         //preView Setting
 //        setDrawingCacheEnabled(true);
@@ -169,8 +187,14 @@ public class MaskCropView extends View {
 
 
     protected void onDraw(Canvas canvas) {
-        if (resizeBitmap != null)
+        if (resizeBitmap != null) {
             canvas.drawBitmap(resizeBitmap, 0, 0, paint);  //Original Image (Background)
+
+            if(firstDraw){
+                preViewBitmap = getDrawingCache();
+                firstDraw =false;
+            }
+        }
 
         if (drawFlag) {
             canvas.drawColor(0x77000000);               //Dim
@@ -178,28 +202,78 @@ public class MaskCropView extends View {
         }
         canvas.drawPath(viewPath, drawPaint);           //Masking line
 
-        if(firstDraw){
-            firstDraw =false;
-        }
-
         if (preViewFlag) {
-            int srcLeft = (currentX - preViewSize);// < 0 ? 0 : currentX - preViewSize;
-            int srcTop = (currentY - preViewSize);// < 0 ? 0 : currentY - preViewSize;
-            int srcRight = (currentX + preViewSize);// < 0 ? 0 : currentX + preViewSize;
-            int srcBottom = (currentY + preViewSize);// < 0 ? 0 : currentY + preViewSize;
+            int srcLeft = (currentX - preViewSize);
+            int srcTop = (currentY - preViewSize);
+            int srcRight = (currentX + preViewSize);
+            int srcBottom = (currentY + preViewSize);
 
-            int dstLeft = (int) (currentX-preViewSize*2);
-            int dstTop = (int) (currentY-preViewSize*2);
-            int dstRight = (int) (currentX-preViewSize*0.7);
-            int dstBottom = (int) (currentY-preViewSize*0.7);
+            int minusLeft=0;
+            int minusTop=0;
+            int minusRight=0;
+            int minusBottom=0;
+            if(srcLeft<0){
+                minusLeft = Math.abs(srcLeft);
+            }
+            if(srcTop<0){
+                minusTop = Math.abs(srcTop);
+            }
+            if(srcRight<0){
+                minusRight = Math.abs(srcRight);
+            }
+            if(srcBottom<0){
+                minusBottom = Math.abs(srcBottom);
+            }
 
-            int pointLeft = dstLeft+(dstRight - dstLeft)/2;
-            int pointTop = dstTop+(dstBottom - dstTop)/2;
-            int pointRight = pointLeft + preViewSize/9;
-            int pointBottom = pointTop + preViewSize/9;
 
-            canvas.drawBitmap(getDrawingCache(), new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(dstLeft, dstTop,dstRight, dstBottom), null);
-            canvas.drawRect(pointLeft, pointTop, pointRight, pointBottom,preViewPoint);
+            int dstLeft = (int) (currentX-preViewSize-preViewPosition)+minusLeft;
+            int dstTop = (int) (currentY-preViewSize-preViewPosition)+minusTop;
+            int dstRight = (int) (currentX-preViewPosition)-minusRight-minusLeft;
+            int dstBottom = (int) (currentY-preViewPosition)-minusBottom-minusTop;
+
+            if(dstLeft<0){
+                leftFlag = true;
+                lbDstLeft = (int) (currentX+preViewPosition)+minusLeft;
+                lbDstTop = (int) (currentY-preViewSize-preViewPosition)+minusTop;
+                lbDstRight = (int) (currentX+preViewSize+preViewPosition)-minusRight-minusLeft;
+                lbDstBottom = (int) (currentY-preViewPosition)-minusBottom-minusTop;
+            }else{
+                leftFlag = false;
+            }
+
+            if(dstTop<0){
+                topFlag = true;
+                rtDstLeft = (int) (currentX-preViewSize-preViewPosition)+minusLeft;
+                rtDstTop = (int) (currentY+preViewPosition)+minusTop;
+                rtDstRight = (int) (currentX-preViewPosition)-minusRight-minusLeft;
+                rtDstBottom = (int) (currentY+preViewSize+preViewPosition)-minusBottom-minusTop;
+            }else{
+                topFlag = false;
+            }
+
+            if(dstLeft<0 && dstTop<0){
+                dstLeft = (int) (currentX+preViewPosition)+minusLeft;
+                dstTop = (int) (currentY-preViewSize+preViewPosition)+minusTop;
+                dstRight = (int) (currentX+preViewSize+preViewPosition)-minusRight-minusLeft;
+                dstBottom = (int) (currentY+preViewPosition)-minusBottom-minusTop;
+            }
+
+            int pointLeft = (dstLeft+(dstRight - dstLeft)/2)-preViewPointSize;
+            int pointTop = (dstTop+(dstBottom - dstTop)/2)-preViewPointSize;
+            int pointRight = (dstLeft+(dstRight - dstLeft)/2)+preViewPointSize;
+            int pointBottom = (dstTop+(dstBottom - dstTop)/2)+preViewPointSize;
+
+            if((!leftFlag&&!topFlag) || (leftFlag&&topFlag)) {
+                canvas.drawRect(dstLeft-2,dstTop-2,dstRight+2,dstBottom+2,preViewRectLine);
+                canvas.drawRect(dstLeft, dstTop, dstRight, dstBottom,paint);
+                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(dstLeft, dstTop, dstRight, dstBottom), null);
+            }else if(leftFlag){
+                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(lbDstLeft, lbDstTop, lbDstRight, lbDstBottom), null);
+            }else if(topFlag){
+                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(rtDstLeft, rtDstTop, rtDstRight, rtDstBottom), null);
+            }
+
+            canvas.drawRect(pointLeft, pointTop, pointRight, pointBottom, preViewPaint);
         }
     }
 
