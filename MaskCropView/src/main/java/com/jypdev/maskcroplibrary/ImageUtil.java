@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -163,7 +164,8 @@ public class ImageUtil {
 
     /**
      * 파일 복사
-     * @param srcFile : 복사할 File
+     *
+     * @param srcFile  : 복사할 File
      * @param destFile : 복사될 File
      * @return
      */
@@ -173,7 +175,7 @@ public class ImageUtil {
             InputStream in = new FileInputStream(srcFile);
             try {
                 result = copyToFile(in, destFile);
-            } finally  {
+            } finally {
                 in.close();
             }
         } catch (IOException e) {
@@ -221,10 +223,22 @@ public class ImageUtil {
         bmp = BitmapFactory.decodeFile(path, options);
 
         if (height < width) {
-            if(imageUri!=null) {
+
+            // 이미지를 상황에 맞게 회전시킨다
+            ExifInterface exif = null;
+            try {
+                exif = new ExifInterface(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            int exifOrientation = exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            int exifDegree = exifOrientationToDegrees(exifOrientation);
+
+            if (exifDegree==0 && imageUri != null) {
                 File originalFile = new File(getPath(context, imageUri));
-                File copyImage = new File(Constants.TEMP_PATH+"/"+Constants.TEMP_CROP_FILENAME);
-                copyFile(originalFile,copyImage);
+                File copyImage = new File(Constants.TEMP_PATH + "/" + Constants.TEMP_CROP_FILENAME);
+                copyFile(originalFile, copyImage);
                 Uri saveUri = Uri.fromFile(copyImage);
                 //crop
                 Intent intent = new Intent("com.android.camera.action.CROP");
@@ -241,7 +255,7 @@ public class ImageUtil {
             }
 
             Matrix matrix = new Matrix();
-            matrix.postRotate(90);
+            matrix.postRotate(exifDegree);
             Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
             bmp.recycle();
             return bitmap;
@@ -253,7 +267,6 @@ public class ImageUtil {
 
     public static int calculateInSampleSize(BitmapFactory.Options options,
                                             int reqWidth, int reqHeight) {
-
         final int height = options.outHeight;
         final int width = options.outWidth;
         int inSampleSize = 1;
@@ -271,38 +284,40 @@ public class ImageUtil {
     public static int getScreenHeight(Context context) {
         Display display = ((WindowManager) context.getSystemService(context.WINDOW_SERVICE))
                 .getDefaultDisplay();
-
         int height = 0;
-
         if (android.os.Build.VERSION.SDK_INT >= 13) {
             Point size = new Point();
             display.getSize(size);
             height = size.y;
-
         } else {
             height = display.getHeight();
-
         }
-
         return height;
     }
 
     public static int getScreenWidth(Context context) {
         Display display = ((WindowManager) context.getSystemService(context.WINDOW_SERVICE))
                 .getDefaultDisplay();
-
         int width = 0;
-
         if (android.os.Build.VERSION.SDK_INT >= 13) {
             Point size = new Point();
             display.getSize(size);
 
             width = size.x;
         } else {
-
             width = display.getWidth();
         }
-
         return width;
+    }
+
+    public static int exifOrientationToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        }
+        return 0;
     }
 }
