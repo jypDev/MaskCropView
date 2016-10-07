@@ -179,7 +179,7 @@ public class MaskCropView extends View {
         preViewPaint.setColor(0xFFFF0000);
         preViewSize = displayWidth / 5;
         preViewPosition = displayWidth / 5;
-        preViewPointSize = 3;
+        preViewPointSize = 4;
         Log.v("@@@", "프리뷰사이즈: " + preViewSize);
         //preView Setting
 //        setDrawingCacheEnabled(true);
@@ -190,9 +190,9 @@ public class MaskCropView extends View {
         if (resizeBitmap != null) {
             canvas.drawBitmap(resizeBitmap, 0, 0, paint);  //Original Image (Background)
 
-            if(firstDraw){
+            if (firstDraw) {
                 preViewBitmap = getDrawingCache();
-                firstDraw =false;
+                firstDraw = false;
             }
         }
 
@@ -203,77 +203,143 @@ public class MaskCropView extends View {
         canvas.drawPath(viewPath, drawPaint);           //Masking line
 
         if (preViewFlag) {
+            //원본
             int srcLeft = (currentX - preViewSize);
             int srcTop = (currentY - preViewSize);
             int srcRight = (currentX + preViewSize);
             int srcBottom = (currentY + preViewSize);
 
-            int minusLeft=0;
-            int minusTop=0;
-            int minusRight=0;
-            int minusBottom=0;
-            if(srcLeft<0){
+            int minusLeft = 0;
+            int minusTop = 0;
+            int minusRight = 0;
+            int minusBottom = 0;
+
+            if (srcLeft < 0) {
                 minusLeft = Math.abs(srcLeft);
             }
-            if(srcTop<0){
+            if (srcTop < 0) {
                 minusTop = Math.abs(srcTop);
             }
-            if(srcRight<0){
-                minusRight = Math.abs(srcRight);
+            if (srcRight > getWidth()) {
+                minusRight = srcRight - getWidth();
             }
-            if(srcBottom<0){
-                minusBottom = Math.abs(srcBottom);
+            if (srcBottom > getHeight()) {
+                minusBottom = srcBottom - getHeight();
             }
 
+            srcLeft = srcLeft + minusLeft;
+            srcTop = srcTop + minusTop;
+            srcRight = srcRight - minusRight;
+            srcBottom = srcBottom - minusBottom;
 
-            int dstLeft = (int) (currentX-preViewSize-preViewPosition)+minusLeft;
-            int dstTop = (int) (currentY-preViewSize-preViewPosition)+minusTop;
-            int dstRight = (int) (currentX-preViewPosition)-minusRight-minusLeft;
-            int dstBottom = (int) (currentY-preViewPosition)-minusBottom-minusTop;
+            int dstLeft = (int) 2 + minusLeft;
+            int dstTop = (int) 2 + minusTop;
+            int dstRight = (int) 2 + (preViewSize * 2) - minusRight;
+            int dstBottom = (int) 2 + (preViewSize * 2) - minusBottom;
 
-            if(dstLeft<0){
+            if (currentX < dstRight && currentY < dstBottom) {
                 leftFlag = true;
-                lbDstLeft = (int) (currentX+preViewPosition)+minusLeft;
-                lbDstTop = (int) (currentY-preViewSize-preViewPosition)+minusTop;
-                lbDstRight = (int) (currentX+preViewSize+preViewPosition)-minusRight-minusLeft;
-                lbDstBottom = (int) (currentY-preViewPosition)-minusBottom-minusTop;
-            }else{
+                dstLeft = getWidth() - 2 - preViewSize * 2 + minusLeft;
+                dstRight = getWidth() - 2 - minusRight;
+
+            } else {
                 leftFlag = false;
             }
 
-            if(dstTop<0){
-                topFlag = true;
-                rtDstLeft = (int) (currentX-preViewSize-preViewPosition)+minusLeft;
-                rtDstTop = (int) (currentY+preViewPosition)+minusTop;
-                rtDstRight = (int) (currentX-preViewPosition)-minusRight-minusLeft;
-                rtDstBottom = (int) (currentY+preViewSize+preViewPosition)-minusBottom-minusTop;
-            }else{
-                topFlag = false;
-            }
 
-            if(dstLeft<0 && dstTop<0){
-                dstLeft = (int) (currentX+preViewPosition)+minusLeft;
-                dstTop = (int) (currentY-preViewSize+preViewPosition)+minusTop;
-                dstRight = (int) (currentX+preViewSize+preViewPosition)-minusRight-minusLeft;
-                dstBottom = (int) (currentY+preViewPosition)-minusBottom-minusTop;
-            }
+            int pointLeft = 2 + preViewSize - preViewPointSize;
+            int pointTop = 2 + preViewSize - preViewPointSize;
+            int pointRight = 2 + preViewSize + preViewPointSize;
+            int pointBottom = 2 + preViewSize + preViewPointSize;
 
-            int pointLeft = (dstLeft+(dstRight - dstLeft)/2)-preViewPointSize;
-            int pointTop = (dstTop+(dstBottom - dstTop)/2)-preViewPointSize;
-            int pointRight = (dstLeft+(dstRight - dstLeft)/2)+preViewPointSize;
-            int pointBottom = (dstTop+(dstBottom - dstTop)/2)+preViewPointSize;
-
-            if((!leftFlag&&!topFlag) || (leftFlag&&topFlag)) {
-                canvas.drawRect(dstLeft-2,dstTop-2,dstRight+2,dstBottom+2,preViewRectLine);
-                canvas.drawRect(dstLeft, dstTop, dstRight, dstBottom,paint);
+            if (!leftFlag) {
+                canvas.drawRect(0, 0, preViewSize * 2 + 4, preViewSize * 2 + 4, preViewRectLine);
+                canvas.drawRect(2, 2, preViewSize * 2, preViewSize * 2, paint);
                 canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(dstLeft, dstTop, dstRight, dstBottom), null);
-            }else if(leftFlag){
-                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(lbDstLeft, lbDstTop, lbDstRight, lbDstBottom), null);
-            }else if(topFlag){
-                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(rtDstLeft, rtDstTop, rtDstRight, rtDstBottom), null);
+                canvas.drawRect(pointLeft, pointTop, pointRight, pointBottom, preViewPaint);
+            } else if (leftFlag) {
+                canvas.drawRect(getWidth() - preViewSize * 2 - 4, 0, getWidth(), preViewSize * 2 + 4, preViewRectLine);
+                canvas.drawRect(getWidth() - preViewSize * 2 - 2, 2, getWidth() - 2, preViewSize * 2 + 2, paint);
+                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(dstLeft, dstTop, dstRight, dstBottom), null);
+                canvas.drawRect(getWidth()-2-preViewSize-preViewPointSize,
+                        2+preViewSize-preViewPointSize,
+                        getWidth()-2-preViewSize+preViewPointSize,
+                        2+preViewSize+preViewPointSize,
+                        preViewPaint);
             }
 
-            canvas.drawRect(pointLeft, pointTop, pointRight, pointBottom, preViewPaint);
+            //손가락위치에 따라바뀜 수정필요함..
+//            int srcLeft = (currentX - preViewSize);
+//            int srcTop = (currentY - preViewSize);
+//            int srcRight = (currentX + preViewSize);
+//            int srcBottom = (currentY + preViewSize);
+//
+//            int minusLeft=0;
+//            int minusTop=0;
+//            int minusRight=0;
+//            int minusBottom=0;
+//            if(srcLeft<0){
+//                minusLeft = Math.abs(srcLeft);
+//            }
+//            if(srcTop<0){
+//                minusTop = Math.abs(srcTop);
+//            }
+//            if(srcRight<0){
+//                minusRight = Math.abs(srcRight);
+//            }
+//            if(srcBottom<0){
+//                minusBottom = Math.abs(srcBottom);
+//            }
+//
+//
+//            int dstLeft = (int) (currentX-preViewSize-preViewPosition)+minusLeft;
+//            int dstTop = (int) (currentY-preViewSize-preViewPosition)+minusTop;
+//            int dstRight = (int) (currentX-preViewPosition)-minusRight-minusLeft;
+//            int dstBottom = (int) (currentY-preViewPosition)-minusBottom-minusTop;
+//
+//            if(dstLeft<0){
+//                leftFlag = true;
+//                lbDstLeft = (int) (currentX+preViewPosition)+minusLeft;
+//                lbDstTop = (int) (currentY-preViewSize-preViewPosition)+minusTop;
+//                lbDstRight = (int) (currentX+preViewSize+preViewPosition)-minusRight-minusLeft;
+//                lbDstBottom = (int) (currentY-preViewPosition)-minusBottom-minusTop;
+//            }else{
+//                leftFlag = false;
+//            }
+//
+//            if(dstTop<0){
+//                topFlag = true;
+//                rtDstLeft = (int) (currentX-preViewSize-preViewPosition)+minusLeft;
+//                rtDstTop = (int) (currentY+preViewPosition)+minusTop;
+//                rtDstRight = (int) (currentX-preViewPosition)-minusRight-minusLeft;
+//                rtDstBottom = (int) (currentY+preViewSize+preViewPosition)-minusBottom-minusTop;
+//            }else{
+//                topFlag = false;
+//            }
+//
+//            if(dstLeft<0 && dstTop<0){
+//                dstLeft = (int) (currentX+preViewPosition)+minusLeft;
+//                dstTop = (int) (currentY-preViewSize+preViewPosition)+minusTop;
+//                dstRight = (int) (currentX+preViewSize+preViewPosition)-minusRight-minusLeft;
+//                dstBottom = (int) (currentY+preViewPosition)-minusBottom-minusTop;
+//            }
+//
+//            int pointLeft = (dstLeft+(dstRight - dstLeft)/2)-preViewPointSize;
+//            int pointTop = (dstTop+(dstBottom - dstTop)/2)-preViewPointSize;
+//            int pointRight = (dstLeft+(dstRight - dstLeft)/2)+preViewPointSize;
+//            int pointBottom = (dstTop+(dstBottom - dstTop)/2)+preViewPointSize;
+//
+//            if((!leftFlag&&!topFlag) || (leftFlag&&topFlag)) {
+//                canvas.drawRect(dstLeft-2,dstTop-2,dstRight+2,dstBottom+2,preViewRectLine);
+//                canvas.drawRect(dstLeft, dstTop, dstRight, dstBottom,paint);
+//                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(dstLeft, dstTop, dstRight, dstBottom), null);
+//            }else if(leftFlag){
+//                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(lbDstLeft, lbDstTop, lbDstRight, lbDstBottom), null);
+//            }else if(topFlag){
+//                canvas.drawBitmap(preViewBitmap, new Rect(srcLeft, srcTop, srcRight, srcBottom), new Rect(rtDstLeft, rtDstTop, rtDstRight, rtDstBottom), null);
+//            }
+//
+//            canvas.drawRect(pointLeft, pointTop, pointRight, pointBottom, preViewPaint);
         }
     }
 
