@@ -59,12 +59,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
        super.onActivityResult(requestCode,resultCode,data);
