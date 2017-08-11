@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MaskCropView.iml" filepath="$PROJECT_DIR$/MaskCropView.iml" />
-      <module fileurl="file://$PROJECT_DIR$/MaskCropView/MaskCropView-MaskCropView.iml" filepath="$PROJECT_DIR$/MaskCropView/MaskCropView-MaskCropView.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MaskCropView/MaskCropView.iml" filepath="$PROJECT_DIR$/MaskCropView/MaskCropView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/crop.iml" filepath="$PROJECT_DIR$/crop.iml" />
     </modules>
   </component>
 </project>
